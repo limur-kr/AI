@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Academy - 관리자 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .applications-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .applications-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .applications-table th,
+        .applications-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .applications-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .applications-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .btn-delete {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .motivation-text {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .motivation-full {
+            white-space: pre-wrap;
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+
+            .applications-table {
+                font-size: 0.9rem;
+            }
+
+            .applications-table th,
+            .applications-table td {
+                padding: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1 class="admin-title">AI Academy 관리자 대시보드</h1>
+        <a href="index.html" class="back-btn">메인으로 돌아가기</a>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- 통계 카드 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalApplications">0</div>
+                <div class="stat-label">총 신청 건수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingApplications">0</div>
+                <div class="stat-label">대기 중</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="approvedApplications">0</div>
+                <div class="stat-label">승인됨</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="rejectedApplications">0</div>
+                <div class="stat-label">거절됨</div>
+            </div>
+        </div>
+
+        <!-- 신청 목록 -->
+        <div class="applications-section">
+            <div class="section-header">
+                <h2 class="section-title">신청 목록</h2>
+                <button class="refresh-btn" onclick="loadApplications()">새로고침</button>
+            </div>
+            <div id="applicationsTable">
+                <div class="loading">데이터를 불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase 설정 -->
+    <script src="firebase-config.js"></script>
+    
+    <script>
+        // 페이지 로드 시 데이터 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadApplications();
+        });
+
+        // 신청 데이터 불러오기
+        async function loadApplications() {
+            const tableContainer = document.getElementById('applicationsTable');
+            tableContainer.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
+
+            try {
+                const applications = await getApplications();
+                
+                if (applications.length === 0) {
+                    tableContainer.innerHTML = '<div class="no-data">신청 데이터가 없습니다.</div>';
+                    updateStats(applications);
+                    return;
+                }
+
+                // 통계 업데이트
+                updateStats(applications);
+
+                // 테이블 생성
+                const tableHTML = `
+                    <table class="applications-table">
+                        <thead>
+                            <tr>
+                                <th>신청일시</th>
+                                <th>이름</th>
+                                <th>이메일</th>
+                                <th>휴대폰</th>
+                                <th>신청과목</th>
+                                <th>신청동기</th>
+                                <th>상태</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${applications.map(app => `
+                                <tr>
+                                    <td>${formatDate(app.timestamp)}</td>
+                                    <td>${app.name}</td>
+                                    <td>${app.email}</td>
+                                    <td>${app.phone}</td>
+                                    <td>${app.course || 'N/A'}</td>
+                                    <td>
+                                        <div class="motivation-text" title="${app.motivation}">
+                                            ${app.motivation}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-${app.status}">
+                                            ${getStatusText(app.status)}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            ${app.status === 'pending' ? `
+                                                <button class="btn btn-approve" onclick="updateStatus('${app.id}', 'approved')">승인</button>
+                                                <button class="btn btn-reject" onclick="updateStatus('${app.id}', 'rejected')">거절</button>
+                                            ` : ''}
+                                            <button class="btn btn-delete" onclick="deleteApp('${app.id}')">삭제</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                tableContainer.innerHTML = tableHTML;
+
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                tableContainer.innerHTML = '<div class="no-data">데이터를 불러오는 중 오류가 발생했습니다.</div>';
+            }
+        }
+
+        // 통계 업데이트
+        function updateStats(applications) {
+            const total = applications.length;
+            const pending = applications.filter(app => app.status === 'pending').length;
+            const approved = applications.filter(app => app.status === 'approved').length;
+            const rejected = applications.filter(app => app.status === 'rejected').length;
+
+            document.getElementById('totalApplications').textContent = total;
+            document.getElementById('pendingApplications').textContent = pending;
+            document.getElementById('approvedApplications').textContent = approved;
+            document.getElementById('rejectedApplications').textContent = rejected;
+        }
+
+        // 날짜 포맷팅
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 상태 텍스트 변환
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '대기 중',
+                'approved': '승인됨',
+                'rejected': '거절됨'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 상태 업데이트
+        async function updateStatus(applicationId, status) {
+            if (!confirm(`정말로 이 신청을 ${getStatusText(status)}로 변경하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                const success = await updateApplicationStatus(applicationId, status);
+                if (success) {
+                    alert('상태가 성공적으로 업데이트되었습니다.');
+                    loadApplications();
+                } else {
+                    alert('상태 업데이트에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('상태 업데이트 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 신청 삭제
+        async function deleteApp(applicationId) {
+            if (!confirm('정말로 이 신청을 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const success = await deleteApplication(applicationId);
+                if (success) {
+                    alert('신청이 성공적으로 삭제되었습니다.');
+                    loadApplications();
+                } else {
+                    alert('삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Error deleting application:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+    </script>
+</body>
+</html> 
